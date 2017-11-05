@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Hexapod1._0
+namespace Hexapod
 {
     public partial class Form1 : Form
     {
@@ -27,7 +27,7 @@ namespace Hexapod1._0
 
             try {
                 sport.Open();
-                sport.Write("#0P1000#3P1000\r");
+                sport.Write("#0P2400#3P2400T2000#5P1700T5000\r");
             }
             catch (Exception ex) {
                 MessageBox.Show(ex.ToString());
@@ -47,7 +47,7 @@ namespace Hexapod1._0
             try
             {
                 sport.Open();
-                sport.Write("#0P700T2000#3P700T2000\r");
+                sport.Write("#0P700T2000#3P700T2000#5P700T7000\r");
             }
             catch (Exception ex)
             {

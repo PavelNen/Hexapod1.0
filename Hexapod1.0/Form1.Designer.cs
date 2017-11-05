@@ -1,4 +1,4 @@
-﻿namespace Hexapod1._0
+﻿namespace Hexapod
 {
     partial class Form1
     {
