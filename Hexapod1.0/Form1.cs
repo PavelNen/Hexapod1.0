@@ -27,7 +27,7 @@ namespace Hexapod
 
             try {
                 sport.Open();
-                sport.Write("#0P2400#3P2400T2000#5P1700T5000\r");
+                sport.Write(Leg.Cmd(Decimal.ToInt32(numericUpDown1.Value), Decimal.ToInt32(numericUpDown2.Value), Decimal.ToInt32(numericUpDown3.Value)));
             }
             catch (Exception ex) {
                 MessageBox.Show(ex.ToString());
