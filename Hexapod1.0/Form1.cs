@@ -15,6 +15,7 @@ namespace Hexapod
         public Form1()
         {
             InitializeComponent();
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -24,10 +25,15 @@ namespace Hexapod
                                                                               System.IO.Ports.Parity.None,
                                                                               8,
                                                                               System.IO.Ports.StopBits.One);
-
-            try {
+            Leg one = new Leg();
+            try
+            {
                 sport.Open();
-                sport.Write(Leg.Cmd(Decimal.ToInt32(numericUpDown1.Value), Decimal.ToInt32(numericUpDown2.Value), Decimal.ToInt32(numericUpDown3.Value)));
+                //sport.Write(Leg.Cmd(Decimal.ToInt32(numericUpDown1.Value), Decimal.ToInt32(numericUpDown2.Value), Decimal.ToInt32(numericUpDown3.Value)) + "\r");
+                string cmd = one.Point(Decimal.ToDouble(numericUpDown1.Value), Decimal.ToDouble(numericUpDown2.Value), Decimal.ToDouble(numericUpDown3.Value));
+                toolStripStatusLabel1.Text = cmd;
+                
+                sport.Write(cmd);
             }
             catch (Exception ex) {
                 MessageBox.Show(ex.ToString());
@@ -43,11 +49,12 @@ namespace Hexapod
                                                                               System.IO.Ports.Parity.None,
                                                                               8,
                                                                               System.IO.Ports.StopBits.One);
-
+            
             try
             {
                 sport.Open();
-                sport.Write("#0P700T2000#3P700T2000#5P700T7000\r");
+                toolStripStatusLabel1.Text = "#0P1500T2000#3P1500T2000#5P1500T7000\r";
+                sport.Write("#0P1500T2000#3P1500T2000#5P1500T7000\r");
             }
             catch (Exception ex)
             {
@@ -55,6 +62,16 @@ namespace Hexapod
             }
 
             sport.Close();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
