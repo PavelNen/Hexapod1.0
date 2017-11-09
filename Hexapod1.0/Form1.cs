@@ -29,7 +29,7 @@ namespace Hexapod
             try
             {
                 sport.Open();
-                //sport.Write(Leg.Cmd(Decimal.ToInt32(numericUpDown1.Value), Decimal.ToInt32(numericUpDown2.Value), Decimal.ToInt32(numericUpDown3.Value)) + "\r");
+                sport.Write(Leg.Cmd(Decimal.ToInt32(numericUpDown1.Value), Decimal.ToInt32(numericUpDown2.Value), Decimal.ToInt32(numericUpDown3.Value)) + "\r");
                 string cmd = one.Point(Decimal.ToDouble(numericUpDown1.Value), Decimal.ToDouble(numericUpDown2.Value), Decimal.ToDouble(numericUpDown3.Value));
                 toolStripStatusLabel1.Text = cmd;
                 
@@ -39,7 +39,7 @@ namespace Hexapod
                 MessageBox.Show(ex.ToString());
             }
 
-            sport.Close();
+           sport.Close();
         }
 
         private void button2_Click(object sender, EventArgs e)

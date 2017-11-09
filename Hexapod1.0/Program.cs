@@ -37,9 +37,9 @@ namespace Hexapod
             return cmd;
         }
 
-        private static short Ang2pos (double ang, short kst, short k00, short k90)
+        private static int Ang2pos (double ang, short kst, short k00, short k90)
         {
-            short p = Convert.ToInt16( kst + ang * Krad(k00, k90));
+            int p = Convert.ToInt32( kst + ang * Krad(k00, k90));
             if (p < 600) { p = 600; }
             if ( p > 2500 ) { p = 2500; }
             return p;
@@ -56,19 +56,33 @@ namespace Hexapod
 
             double y = Math.Asin(l2 * Math.Sin(b) / Math.Sqrt(xsqr));
 
-            double a = Math.PI - y - Math.Atan(dist/(hpelvis - hfoot)); //Угол бедра относительно вертикальной оси
+            double a;
+            if (hpelvis == hfoot)
+            {
+                a = Math.PI / 2;
+            }
+            else if (hpelvis > hfoot)
+            {
+                a = Math.PI - y - Math.Atan(dist / (hpelvis - hfoot)); //Угол бедра относительно вертикальной оси
+            }else
+            {
+                a = Math.PI - y - 1 / Math.Atan(dist / (hpelvis - hfoot)); //Угол бедра относительно вертикальной оси
+            }
 
             short p1 = 1500;
             if (p1 < kmin1) { p1 = kmin1; }
             if (p1 > kmax1) { p1 = kmax1; }
-            short p2 = Ang2pos(a, 1500, k002, k902);
+            int p2 = Ang2pos(a, 1500, k002, k902);
             if (p2 < kmin2) { p2 = kmin2; }
             if (p2 > kmax2) { p2 = kmax2; }
-            short p3 = Ang2pos(2*Math.PI - b, 2400, k003, k903);
+            int p3 = Ang2pos(Math.PI - b, 2400, k003, k903);
             if (p3 < kmin3) { p3 = kmin3; }
             if (p3 > kmax3) { p3 = kmax3; }
 
             string order = Cmd(ch1, p1, Program.TIME) + Cmd(ch2, p2, Program.TIME) + Cmd(ch3, p3, Program.TIME) + "\r";
+            //string order = "a = ";
+            //order += a/Math.PI*180;
+           // order += ", b = ";order += b / Math.PI * 180; order += ", y = ";order += y / Math.PI * 180;
             return order;
 
         }
