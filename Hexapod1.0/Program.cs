@@ -3,9 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.Serialization;
 
 namespace Hexapod
 {
+
+    public class WrongCoordException : ApplicationException
+    {
+        public WrongCoordException() { }
+
+        public WrongCoordException(string message) : base(message) { }
+
+        public WrongCoordException(string message, Exception inner) : base(message, inner) { }
+
+        protected WrongCoordException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
+
     public class Leg
     {
         public short ch1, ch2, ch3;
@@ -22,6 +35,7 @@ namespace Hexapod
             k001 = 1500; k901 = 2400;
             k002 = 1500; k902 = 2400;
             k003 = 2400; k903 = 1500;
+            
         }
 
         private static double Krad (short k00, short k90)
@@ -37,52 +51,78 @@ namespace Hexapod
             return cmd;
         }
 
-        private static int Ang2pos (double ang, short kst, short k00, short k90)
+        private static int Ang2pos (double ang, short kst, short k00, short k90, short kmin, short kmax)
         {
             int p = Convert.ToInt32( kst + ang * Krad(k00, k90));
-            if (p < 600) { p = 600; }
-            if ( p > 2500 ) { p = 2500; }
+            if (p < kmin) { p = kmin; }
+            if ( p > kmax ) { p = kmax; }
             return p;
         }
+        
+        private static bool ValidCoord (double hpelvis, double hfoot, double dist)
+        {
+            double l1 = Program.HIP;
+            double l2 = Program.SHIN;
 
+            bool c = true;
+
+            double vmin = Math.Abs(l1 - l2);
+            double vmax = l1 + l2;
+            double x = Math.Sqrt(Math.Pow((hpelvis - hfoot), 2) + Math.Pow(dist, 2));
+
+            if (x.CompareTo(vmin) < 0 || x.CompareTo(vmax) > 0) {
+                c = false;
+            }
+
+            return c;
+        }
+        
         public string Point (double hpelvis, double hfoot, double dist)
         {
+
+            if (ValidCoord(hpelvis, hfoot, dist) == false)
+            {
+                throw new WrongCoordException("Невозможные координаты");
+            }
             //Конвертирование линейных координат в углы в узлах
             double l1 = Program.HIP;
             double l2 = Program.SHIN;
 
             double xsqr = Math.Pow((hpelvis - hfoot), 2) + Math.Pow(dist, 2); //Это квадрат длины!
+            double x = Math.Sqrt(xsqr);
+
             double b = Math.Acos((l1 * l1 + l2 * l2 - xsqr) / (2 * l1 * l2)); //Угол между бедром и голенью
 
-            double y = Math.Asin(l2 * Math.Sin(b) / Math.Sqrt(xsqr));
+            double siny = l2 * Math.Sin(b) / x;
+            double y = Math.Acos((l1 * l1 + xsqr - l2 * l2) / (2 * l1 * x));
 
             double a;
             if (hpelvis == hfoot)
             {
-                a = Math.PI / 2;
+                a = Math.PI/2 - y;
             }
             else if (hpelvis > hfoot)
             {
                 a = Math.PI - y - Math.Atan(dist / (hpelvis - hfoot)); //Угол бедра относительно вертикальной оси
             }else
             {
-                a = Math.PI - y - 1 / Math.Atan(dist / (hpelvis - hfoot)); //Угол бедра относительно вертикальной оси
+                a = Math.PI/2 - y - Math.Atan((hfoot - hpelvis)/dist); //Угол бедра относительно вертикальной оси
             }
 
             short p1 = 1500;
             if (p1 < kmin1) { p1 = kmin1; }
             if (p1 > kmax1) { p1 = kmax1; }
-            int p2 = Ang2pos(a, 1500, k002, k902);
+            int p2 = Ang2pos(a, k002, k002, k902, kmin2, kmax2);
             if (p2 < kmin2) { p2 = kmin2; }
             if (p2 > kmax2) { p2 = kmax2; }
-            int p3 = Ang2pos(Math.PI - b, 2400, k003, k903);
+            int p3 = Ang2pos(Math.PI - b, k003, k003, k903, kmin3, kmax3);
             if (p3 < kmin3) { p3 = kmin3; }
             if (p3 > kmax3) { p3 = kmax3; }
 
             string order = Cmd(ch1, p1, Program.TIME) + Cmd(ch2, p2, Program.TIME) + Cmd(ch3, p3, Program.TIME) + "\r";
             //string order = "a = ";
             //order += a/Math.PI*180;
-           // order += ", b = ";order += b / Math.PI * 180; order += ", y = ";order += y / Math.PI * 180;
+            //order += ", b = ";order += b / Math.PI * 180; order += ", y = ";order += y / Math.PI * 180;
             return order;
 
         }
