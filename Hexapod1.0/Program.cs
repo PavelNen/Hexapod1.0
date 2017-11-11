@@ -24,6 +24,7 @@ namespace Hexapod
         public short ch1, ch2, ch3;
         public short kmin1, kmax1, kmin2, kmax2, kmin3, kmax3;
         public short k001, k901, k002, k902, k003, k903;
+        public double shangle;
         
         public Leg()
         {
@@ -35,7 +36,8 @@ namespace Hexapod
             k001 = 1500; k901 = 2400;
             k002 = 1500; k902 = 2400;
             k003 = 2400; k903 = 1500;
-            
+
+            shangle = Math.PI / 3;
         }
 
         private static double Krad (short k00, short k90)
@@ -79,6 +81,9 @@ namespace Hexapod
         
         public string Point (double hpelvis, double hfoot, double dist, double along)
         {
+            //hplevis - высота корпуса над полом; hfoot - высота стопы над полом;
+            //dist - расстояние от нуля до стопы поперёк робота; along - рассотяние от нуля до стопы вдоль робота ;
+            //shangle - поправка нулевой оси;
 
             if (ValidCoord(hpelvis, hfoot, dist, along) == false)
             {
@@ -113,7 +118,7 @@ namespace Hexapod
 
             double c = Math.Atan(along / dist);
 
-            int p1 = Ang2pos(c, k001, k001, k901, kmin1, kmax1);
+            int p1 = Ang2pos(shangle + c, k001, k001, k901, kmin1, kmax1);
             if (p1 < kmin1) { p1 = kmin1; }
             if (p1 > kmax1) { p1 = kmax1; }
             int p2 = Ang2pos(a, k002, k002, k902, kmin2, kmax2);
@@ -141,7 +146,7 @@ namespace Hexapod
     {
         public const double HIP = 5.5; //Бедро
         public const double SHIN = 13; //Голень
-        public const short TIME = 3000;
+        public const short TIME = 1000;
         
         /// <summary>
         /// Главная точка входа для приложения.
