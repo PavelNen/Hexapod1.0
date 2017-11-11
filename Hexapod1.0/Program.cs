@@ -28,7 +28,7 @@ namespace Hexapod
         public Leg()
         {
             ch1 = 5; ch2 = 3; ch3 = 0;
-            kmin1 = 700; kmax1 = 2400;
+            kmin1 = 600; kmax1 = 2400;
             kmin2 = 1050; kmax2 = 2400;
             kmin3 = 700; kmax3 = 2400;
 
@@ -53,34 +53,34 @@ namespace Hexapod
 
         private static int Ang2pos (double ang, short kst, short k00, short k90, short kmin, short kmax)
         {
-            int p = Convert.ToInt32( kst + ang * Krad(k00, k90));
+            int p = kst + Convert.ToInt32( ang * Krad(k00, k90));
             if (p < kmin) { p = kmin; }
             if ( p > kmax ) { p = kmax; }
             return p;
         }
         
-        private static bool ValidCoord (double hpelvis, double hfoot, double dist)
+        private static bool ValidCoord (double hpelvis, double hfoot, double dist, double along)
         {
             double l1 = Program.HIP;
             double l2 = Program.SHIN;
 
-            bool c = true;
+            bool e = true;
 
             double vmin = Math.Abs(l1 - l2);
             double vmax = l1 + l2;
-            double x = Math.Sqrt(Math.Pow((hpelvis - hfoot), 2) + Math.Pow(dist, 2));
+            double x = Math.Sqrt(Math.Pow((hpelvis - hfoot), 2) + Math.Pow(dist,2) + Math.Pow(along,2));
 
             if (x.CompareTo(vmin) < 0 || x.CompareTo(vmax) > 0) {
-                c = false;
+                e = false;
             }
 
-            return c;
+            return e;
         }
         
-        public string Point (double hpelvis, double hfoot, double dist)
+        public string Point (double hpelvis, double hfoot, double dist, double along)
         {
 
-            if (ValidCoord(hpelvis, hfoot, dist) == false)
+            if (ValidCoord(hpelvis, hfoot, dist, along) == false)
             {
                 throw new WrongCoordException("Невозможные координаты");
             }
@@ -88,7 +88,9 @@ namespace Hexapod
             double l1 = Program.HIP;
             double l2 = Program.SHIN;
 
-            double xsqr = Math.Pow((hpelvis - hfoot), 2) + Math.Pow(dist, 2); //Это квадрат длины!
+            double lpro = Math.Sqrt(Math.Pow(dist, 2) + Math.Pow(along, 2)); //Длина проекции ноги на пол
+
+            double xsqr = Math.Pow((hpelvis - hfoot), 2) + Math.Pow(lpro, 2); //Это квадрат длины!
             double x = Math.Sqrt(xsqr);
 
             double b = Math.Acos((l1 * l1 + l2 * l2 - xsqr) / (2 * l1 * l2)); //Угол между бедром и голенью
@@ -103,13 +105,15 @@ namespace Hexapod
             }
             else if (hpelvis > hfoot)
             {
-                a = Math.PI - y - Math.Atan(dist / (hpelvis - hfoot)); //Угол бедра относительно вертикальной оси
+                a = Math.PI - y - Math.Atan(lpro / (hpelvis - hfoot)); //Угол бедра относительно вертикальной оси
             }else
             {
-                a = Math.PI/2 - y - Math.Atan((hfoot - hpelvis)/dist); //Угол бедра относительно вертикальной оси
+                a = Math.PI / 2 - y - Math.Atan((hfoot - hpelvis) / lpro); //Угол бедра относительно вертикальной оси
             }
 
-            short p1 = 1500;
+            double c = Math.Atan(along / dist);
+
+            int p1 = Ang2pos(c, k001, k001, k901, kmin1, kmax1);
             if (p1 < kmin1) { p1 = kmin1; }
             if (p1 > kmax1) { p1 = kmax1; }
             int p2 = Ang2pos(a, k002, k002, k902, kmin2, kmax2);

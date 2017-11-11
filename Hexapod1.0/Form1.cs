@@ -70,7 +70,7 @@ namespace Hexapod
             {
                 sport.Open();
                 //sport.Write(Leg.Cmd(Decimal.ToInt32(numericUpDown1.Value), Decimal.ToInt32(numericUpDown2.Value), Decimal.ToInt32(numericUpDown3.Value)) + "\r");
-                string cmd = one.Point(Decimal.ToDouble(numericUpDown1.Value), Decimal.ToDouble(numericUpDown2.Value), Decimal.ToDouble(numericUpDown3.Value));
+                string cmd = one.Point(Decimal.ToDouble(numericUpDown1.Value), Decimal.ToDouble(numericUpDown2.Value), Decimal.ToDouble(numericUpDown3.Value), Decimal.ToDouble(numericUpDown4.Value));
                 //string cmd = R2.Point(Decimal.ToDouble(numericUpDown1.Value), Decimal.ToDouble(numericUpDown2.Value), Decimal.ToDouble(numericUpDown3.Value));
                 toolStripStatusLabel1.Text = cmd;
                 
@@ -113,6 +113,11 @@ namespace Hexapod
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
         {
 
         }
